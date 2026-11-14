@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mutahir's Vocab Games - Interactive Vocabulary & Word Games</title>
+    <meta name="description" content="Play Mutahir's Vocab Games! Challenge yourself with Classic Vocab Quest, Word Scramble, Definition Match, and custom flashcards.">
+    <meta name="keywords" content="Mutahir's Vocab Games, vocabulary games, word scramble, definition match, English vocabulary quiz, flashcards">
+    <meta name="author" content="Mutahir Hassan">
+    <meta property="og:title" content="Mutahir's Vocab Games">
+    <meta property="og:description" content="Interactive vocabulary arcade and study hub featuring Classic Vocab Quest, Word Scramble, Definition Match, and Flashcards.">
+    <meta property="og:type" content="website">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+            min-height: 100vh;
+            color: #f8fafc;
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .perspective-1000 { perspective: 1000px; }
+        .transform-style-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(99, 102, 241, 0.4); }
+            50% { box-shadow: 0 0 28px rgba(168, 85, 247, 0.65); }
+        }
+        .glow-btn { animation: pulse-glow 3s infinite; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- Navbar -->
+    <header class="glass-card sticky top-0 z-50 border-b border-indigo-500/20">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="showView('home')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-extrabold text-xl shadow-lg">
+                    M
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-300 via-purple-300 to-pink-300 bg-clip-text text-transparent">
+                        Mutahir's Vocab Games
+                    </h1>
+                    <p class="text-xs text-slate-400">Interactive Word Arcade & Study Hub</p>
+                </div>
+            </div>
+
+            <nav class="flex flex-wrap items-center gap-2 text-sm font-semibold">
+                <button onclick="showView('home')" class="nav-btn px-3 py-2 rounded-lg hover:bg-white/10 transition text-slate-200">
+                    <i class="fas fa-home mr-1.5 text-indigo-400"></i>Arcade
+                </button>
+                <button onclick="showView('flashcards')" class="nav-btn px-3 py-2 rounded-lg hover:bg-white/10 transition text-slate-200">
+                    <i class="fas fa-layer-group mr-1.5 text-emerald-400"></i>Flashcards
+                </button>
+                <button onclick="showView('custom')" class="nav-btn px-3 py-2 rounded-lg hover:bg-white/10 transition text-slate-200">
+                    <i class="fas fa-plus-circle mr-1.5 text-amber-400"></i>Word Bank (<span id="word-count-badge">0</span>)
+                </button>
+                <div class="px-3 py-1.5 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-200 flex items-center gap-2">
+                    <i class="fas fa-trophy text-amber-400"></i>
+                    <span>Total XP: <strong id="total-xp">0</strong></span>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-6xl w-full mx-auto px-4 py-8">
+
+        <!-- HOME / ARCADE HUB -->
+        <section id="view-home" class="space-y-8">
+            <div class="text-center max-w-2xl mx-auto space-y-3">
+                <span class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                    Welcome to Mutahir's Vocab Games
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-white">
+                    Master Advanced English Vocabulary Through Play
+                </h2>
+                <p class="text-slate-300 text-sm sm:text-base">
+                    Choose a game mode below, customize your question count and timer, or build your own custom study deck.
+                </p>
+            </div>
+
+            <!-- Global Game Settings Bar -->
+            <div class="glass-card rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4">
+                <div class="flex flex-wrap items-center gap-4">
+                    <div>
+                        <label class="block text-xs text-slate-400 font-semibold mb-1">Questions per Round</label>
+                        <select id="setting-count" class="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-400">
+                            <option value="5">5 Questions</option>
+                            <option value="10" selected>10 Questions</option>
+                            <option value="15">15 Questions</option>
+                            <option value="20">20 Questions</option>
+                            <option value="all">All Words</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 font-semibold mb-1">Timer Mode</label>
+                        <select id="setting-timer" class="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-400">
+                            <option value="0">No Timer (Relaxed)</option>
+                            <option value="15" selected>15 Seconds / Question</option>
+                            <option value="10">10 Seconds (Blitz)</option>
+                            <option value="25">25 Seconds</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 font-semibold mb-1">Word Source</label>
+                        <select id="setting-source" class="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-400">
+                            <option value="all">All Words (Built-in + Custom)</option>
+                            <option value="builtin">Built-in Advanced List</option>
+                            <option value="custom">My Custom Words Only</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleSound()" id="sound-toggle-btn" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-sm font-semibold flex items-center gap-2 transition">
+                        <i class="fas fa-volume-up text-indigo-400"></i>
+                        <span>Sound: ON</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Game Modes Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Game 1: Classic Vocab Quest -->
+                <div class="glass-card rounded-2xl p-6 flex flex-col justify-between hover:border-indigo-400/50 transition group">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition">
+                            <i class="fas fa-compass"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">Classic Vocab Quest</h3>
+                        <p class="text-slate-300 text-sm mb-4">
+                            Identify the exact definition of high-level vocabulary words with streak multipliers, audio pronunciation, and 50/50 hints.
+                        </p>
+                    </div>
+                    <button onclick="startQuest()" class="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 font-bold text-white shadow-lg glow-btn transition">
+                        Play Vocab Quest <i class="fas fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+
+                <!-- Game 2: Word Scramble & Speed Typer -->
+                <div class="glass-card rounded-2xl p-6 flex flex-col justify-between hover:border-pink-400/50 transition group">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-pink-500/20 text-pink-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition">
+                            <i class="fas fa-keyboard"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">Word Scramble</h3>
+                        <p class="text-slate-300 text-sm mb-4">
+                            Read the definition and unscramble the jumbled letters to spell the target word before time runs out!
+                        </p>
+                    </div>
+                    <button onclick="startScramble()" class="w-full py-3 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 font-bold text-white shadow-lg transition">
+                        Play Word Scramble <i class="fas fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+
+                <!-- Game 3: Definition Match -->
+                <div class="glass-card rounded-2xl p-6 flex flex-col justify-between hover:border-emerald-400/50 transition group">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition">
+                            <i class="fas fa-puzzle-piece"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">Definition Match</h3>
+                        <p class="text-slate-300 text-sm mb-4">
+                            Connect 5 words on the left with their matching definitions on the right as fast as possible with zero mistakes.
+                        </p>
+                    </div>
+                    <button onclick="startMatch()" class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 font-bold text-white shadow-lg transition">
+                        Play Definition Match <i class="fas fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- GAME 1: CLASSIC VOCAB QUEST -->
+        <section id="view-quest" class="hidden max-w-2xl mx-auto">
+            <div class="glass-card rounded-2xl p-6 sm:p-8 space-y-6">
+                <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-700 pb-4">
+                    <button onclick="exitGame()" class="text-sm text-slate-400 hover:text-white flex items-center gap-1">
+                        <i class="fas fa-arrow-left"></i> Exit
+                    </button>
+                    <div class="flex items-center gap-4 text-sm font-bold">
+                        <span class="text-slate-300">Q <span id="quest-q-num">1</span>/<span id="quest-q-total">10</span></span>
+                        <span class="text-amber-400"><i class="fas fa-fire"></i> <span id="quest-streak">0</span>x</span>
+                        <span class="text-indigo-400">Score: <span id="quest-score">0</span></span>
+                    </div>
+                </div>
+
+                <!-- Timer Bar -->
+                <div id="quest-timer-wrap" class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
+                    <div id="quest-timer-bar" class="bg-indigo-500 h-full transition-all duration-1000" style="width: 100%"></div>
+                </div>
+
+                <!-- Word Card -->
+                <div class="bg-slate-900/80 border border-indigo-500/30 rounded-2xl p-6 text-center relative">
+                    <button onclick="speakCurrentWord()" title="Pronounce Word" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 flex items-center justify-center transition">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                    <span id="quest-pos" class="text-xs uppercase tracking-widest text-indigo-400 font-bold">adjective</span>
+                    <h2 id="quest-word" class="text-3xl sm:text-4xl font-extrabold text-white mt-1">Ephemeral</h2>
+                    <p id="quest-hint-text" class="hidden mt-3 text-xs text-amber-300 italic"></p>
+                </div>
+
+                <!-- Lifelines -->
+                <div class="flex justify-center gap-3">
+                    <button id="btn-5050" onclick="useFiftyFifty()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-bold text-indigo-300 transition">
+                        <i class="fas fa-cut mr-1"></i> 50/50
+                    </button>
+                    <button id="btn-hint" onclick="useContextHint()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-bold text-amber-300 transition">
+                        <i class="fas fa-lightbulb mr-1"></i> Context Clue
+                    </button>
+                </div>
+
+                <!-- Options -->
+                <div id="quest-options" class="space-y-3"></div>
+
+                <button id="quest-next-btn" onclick="nextQuestQuestion()" class="hidden w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold text-white transition">
+                    Next Word <i class="fas fa-chevron-right ml-1"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- GAME 2: WORD SCRAMBLE -->
+        <section id="view-scramble" class="hidden max-w-2xl mx-auto">
+            <div class="glass-card rounded-2xl p-6 sm:p-8 space-y-6">
+                <div class="flex items-center justify-between border-b border-slate-700 pb-4">
+                    <button onclick="exitGame()" class="text-sm text-slate-400 hover:text-white flex items-center gap-1">
+                        <i class="fas fa-arrow-left"></i> Exit
+                    </button>
+                    <div class="flex items-center gap-4 text-sm font-bold">
+                        <span class="text-slate-300">Word <span id="scram-num">1</span>/<span id="scram-total">10</span></span>
+                        <span class="text-pink-400">Score: <span id="scram-score">0</span></span>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/80 border border-pink-500/30 rounded-2xl p-6 text-center space-y-3">
+                    <p class="text-xs uppercase tracking-wider text-pink-400 font-bold">Definition</p>
+                    <p id="scram-def" class="text-lg font-medium text-slate-100">Lasting for a very short time.</p>
+                    <div class="pt-3">
+                        <span class="text-xs text-slate-400 block mb-1">Scrambled Letters:</span>
+                        <div id="scram-letters" class="text-2xl sm:text-3xl font-extrabold tracking-widest text-amber-300 font-mono">
+                            L E P H E M E R A
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <input type="text" id="scram-input" placeholder="Type the unscrambled word..." autocomplete="off"
+                        class="w-full px-4 py-3.5 rounded-xl bg-slate-800 border border-slate-600 text-white text-center text-lg font-bold tracking-wider focus:outline-none focus:border-pink-400">
+                    <div id="scram-feedback" class="text-center text-sm font-bold min-h-[20px]"></div>
+                    <div class="flex gap-3">
+                        <button onclick="reshuffleScramble()" class="px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-sm font-bold text-slate-200">
+                            <i class="fas fa-random mr-1"></i> Shuffle
+                        </button>
+                        <button onclick="revealScrambleLetter()" class="px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-sm font-bold text-amber-300">
+                            <i class="fas fa-eye mr-1"></i> First Letter
+                        </button>
+                        <button onclick="checkScramble()" class="flex-grow py-3 rounded-xl bg-pink-600 hover:bg-pink-500 font-bold text-white transition">
+                            Submit Answer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- GAME 3: DEFINITION MATCH -->
+        <section id="view-match" class="hidden max-w-4xl mx-auto">
+            <div class="glass-card rounded-2xl p-6 sm:p-8 space-y-6">
+                <div class="flex items-center justify-between border-b border-slate-700 pb-4">
+                    <button onclick="exitGame()" class="text-sm text-slate-400 hover:text-white flex items-center gap-1">
+                        <i class="fas fa-arrow-left"></i> Exit
+                    </button>
+                    <h3 class="font-bold text-emerald-400">Match Each Word to Its Definition</h3>
+                    <div class="text-sm font-bold text-slate-300">
+                        Matched: <span id="match-count" class="text-emerald-400">0</span>/5
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div id="match-words-col" class="space-y-3"></div>
+                    <div id="match-defs-col" class="space-y-3"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ROUND SUMMARY MODAL / SECTION -->
+        <section id="view-summary" class="hidden max-w-xl mx-auto">
+            <div class="glass-card rounded-2xl p-8 text-center space-y-6">
+                <div class="w-16 h-16 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-3xl mx-auto">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <div>
+                    <h2 class="text-3xl font-extrabold text-white">Round Complete!</h2>
+                    <p id="summary-subtitle" class="text-slate-300 text-sm mt-1">Great job sharpening your vocabulary!</p>
+                </div>
+                <div class="grid grid-cols-2 gap-4 bg-slate-900/70 p-4 rounded-xl border border-slate-700">
+                    <div>
+                        <span class="text-xs text-slate-400 block">Round Score</span>
+                        <span id="summary-score" class="text-2xl font-extrabold text-indigo-400">0</span>
+                    </div>
+                    <div>
+                        <span class="text-xs text-slate-400 block">Accuracy</span>
+                        <span id="summary-accuracy" class="text-2xl font-extrabold text-emerald-400">100%</span>
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="showView('home')" class="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-white transition">
+                        Back to Arcade
+                    </button>
+                    <button id="summary-replay-btn" class="flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold text-white transition">
+                        Play Again
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- FLASHCARDS VIEW -->
+        <section id="view-flashcards" class="hidden max-w-xl mx-auto space-y-6">
+            <div class="text-center">
+                <h2 class="text-2xl font-extrabold text-white">Interactive Study Flashcards</h2>
+                <p class="text-sm text-slate-300">Click the card to flip between word and definition.</p>
+            </div>
+
+            <div onclick="flipFlashcard()" class="cursor-pointer perspective-1000 h-72">
+                <div id="flashcard-inner" class="relative w-full h-full transition-transform duration-500 transform-style-3d">
+                    <!-- Front -->
+                    <div class="absolute inset-0 glass-card rounded-2xl p-8 flex flex-col items-center justify-center text-center backface-hidden border-2 border-indigo-500/30">
+                        <span id="fc-pos" class="text-xs uppercase tracking-widest text-indigo-400 font-bold mb-2">adjective</span>
+                        <h3 id="fc-word" class="text-4xl font-extrabold text-white">Ephemeral</h3>
+                        <button onclick="event.stopPropagation(); speakFlashcard()" class="mt-4 px-3 py-1.5 rounded-full bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 text-xs font-bold">
+                            <i class="fas fa-volume-up mr-1"></i> Listen
+                        </button>
+                        <span class="absolute bottom-4 text-xs text-slate-400"><i class="fas fa-sync-alt mr-1"></i> Click to flip</span>
+                    </div>
+                    <!-- Back -->
+                    <div class="absolute inset-0 glass-card rounded-2xl p-8 flex flex-col items-center justify-center text-center backface-hidden rotate-y-180 border-2 border-emerald-500/30 bg-slate-900">
+                        <span class="text-xs uppercase tracking-widest text-emerald-400 font-bold mb-2">Definition</span>
+                        <p id="fc-def" class="text-xl font-semibold text-white mb-4">Lasting for a very short time.</p>
+                        <p id="fc-example" class="text-sm text-slate-300 italic">"Fashions are ephemeral, changing with every season."</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <button onclick="prevFlashcard()" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-sm">
+                    <i class="fas fa-chevron-left mr-1"></i> Previous
+                </button>
+                <span class="text-sm font-bold text-slate-300">
+                    Card <span id="fc-index">1</span> of <span id="fc-total">20</span>
+                </span>
+                <button onclick="nextFlashcard()" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold text-sm">
+                    Next <i class="fas fa-chevron-right ml-1"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- CUSTOM WORD BANK VIEW -->
+        <section id="view-custom" class="hidden max-w-3xl mx-auto space-y-6">
+            <div class="glass-card rounded-2xl p-6 space-y-4">
+                <h2 class="text-xl font-extrabold text-white"><i class="fas fa-plus-circle text-amber-400 mr-2"></i>Add Custom Vocabulary</h2>
+                <p class="text-sm text-slate-300">Words you add here are saved automatically in your browser and included in all games!</p>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <input type="text" id="new-word" placeholder="Word (e.g. Ubiquitous)" class="px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-600 text-sm text-white">
+                    <input type="text" id="new-pos" placeholder="Part of Speech (e.g. adj.)" class="px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-600 text-sm text-white">
+                    <input type="text" id="new-example" placeholder="Example sentence (optional)" class="px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-600 text-sm text-white">
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <input type="text" id="new-def" placeholder="Clear definition..." class="flex-grow px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-600 text-sm text-white">
+                    <button onclick="addCustomWord()" class="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-sm transition">
+                        Add Word
+                    </button>
+                </div>
+            </div>
+
+            <div class="glass-card rounded-2xl p-6 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-white">Vocabulary Library (<span id="lib-total">0</span> words)</h3>
+                    <button onclick="clearCustomWords()" class="text-xs text-rose-400 hover:underline">Clear Custom Words</button>
+                </div>
+                <div id="word-library-list" class="divide-y divide-slate-700/70 max-h-96 overflow-y-auto pr-2"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/10 py-6 text-center text-xs text-slate-400">
+        <p>© 2026 <strong class="text-slate-200">Mutahir's Vocab Games</strong> • Built for Vocabulary Mastery</p>
+    </footer>
+
+    <script>
+        // Built-in Vocabulary Database
+        const BUILTIN_WORDS = [
+            { word: "Ephemeral", pos: "adjective", def: "Lasting for a very short time.", example: "Fame in the digital age can be surprisingly ephemeral." },
+            { word: "Garrulous", pos: "adjective", def: "Excessively talkative, especially on trivial matters.", example: "The garrulous host kept his guests entertained for hours." },
+            { word: "Obfuscate", pos: "verb", def: "To make obscure, unclear, or unintelligible.", example: "Technical jargon often serves to obfuscate simple ideas." },
+            { word: "Paucity", pos: "noun", def: "The presence of something in only small or insufficient quantities.", example: "The paucity of evidence made it difficult to reach a conclusion." },
+            { word: "Sycophant", pos: "noun", def: "A person who acts obsequiously toward someone important to gain advantage.", example: "A wise leader avoids surrounding themselves with sycophants." },
+            { word: "Ubiquitous", pos: "adjective", def: "Present, appearing, or found everywhere.", example: "Smartphones have become ubiquitous in modern society." },
+            { word: "Pragmatic", pos: "adjective", def: "Dealing with things sensibly and realistically based on practical considerations.", example: "She took a pragmatic approach to solving the budget shortfall." },
+            { word: "Alacrity", pos: "noun", def: "Brisk and cheerful readiness.", example: "He accepted the invitation to speak at the conference with alacrity." },
+            { word: "Cacophony", pos: "noun", def: "A harsh, discordant mixture of sounds.", example: "A cacophony of car horns echoed through the downtown streets." },
+            { word: "Esoteric", pos: "adjective", def: "Intended for or likely to be understood by only a small number of people with specialized knowledge.", example: "The lecture covered esoteric concepts in quantum mechanics." },
+            { word: "Fastidious", pos: "adjective", def: "Very attentive to and concerned about accuracy and detail.", example: "The archivist was fastidious in cataloging every historical letter." },
+            { word: "Iconoclast", pos: "noun", def: "A person who attacks or criticizes cherished beliefs or institutions.", example: "Known as an iconoclast, the director challenged traditional cinema rules." },
+            { word: "Laconic", pos: "adjective", def: "Using very few words.", example: "His laconic reply of 'Maybe' left everyone guessing." },
+            { word: "Magnanimous", pos: "adjective", def: "Generous or forgiving, especially toward a rival or less powerful person.", example: "The champion was magnanimous in victory, praising her opponent's skill." },
+            { word: "Nefarious", pos: "adjective", def: "Wicked or criminal.", example: "The detective uncovered a nefarious plot to rig the auction." },
+            { word: "Ostentatious", pos: "adjective", def: "Characterized by vulgar or pretentious display; designed to impress.", example: "They preferred a quiet celebration over an ostentatious party." },
+            { word: "Pernicious", pos: "adjective", def: "Having a harmful effect, especially in a gradual or subtle way.", example: "Misinformation can have a pernicious influence on public debate." },
+            { word: "Quixotic", pos: "adjective", def: "Exceedingly idealistic; unrealistic and impractical.", example: "Building a castle by hand seemed like a quixotic dream." },
+            { word: "Reticent", pos: "adjective", def: "Not revealing one's thoughts or feelings readily.", example: "He was reticent about his plans for the upcoming championship." },
+            { word: "Sagacious", pos: "adjective", def: "Having or showing keen mental discernment and good judgment; wise.", example: "Her sagacious advice saved the team from a costly mistake." }
+        ];
+
+        let customWords = JSON.parse(localStorage.getItem('mutahir_custom_words') || '[]');
+        let totalXP = parseInt(localStorage.getItem('mutahir_total_xp') || '0');
+        let soundEnabled = true;
+
+        // Audio Synthesizer
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playTone(freq, type = 'sine', duration = 0.15) {
+            if (!soundEnabled) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch (e) {}
+        }
+
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utter = new SpeechSynthesisUtterance(text);
+                utter.rate = 0.95;
+                window.speechSynthesis.speak(utter);
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('sound-toggle-btn');
+            btn.innerHTML = soundEnabled
+                ? '<i class="fas fa-volume-up text-indigo-400"></i><span>Sound: ON</span>'
+                : '<i class="fas fa-volume-mute text-slate-400"></i><span>Sound: OFF</span>';
+        }
+
+        function getActiveWordPool() {
+            const source = document.getElementById('setting-source').value;
+            let pool = [];
+            if (source === 'builtin') pool = [...BUILTIN_WORDS];
+            else if (source === 'custom') pool = customWords.length ? [...customWords] : [...BUILTIN_WORDS];
+            else pool = [...BUILTIN_WORDS, ...customWords];
+            return pool.sort(() => Math.random() - 0.5);
+        }
+
+        function getRoundWordList() {
+            const pool = getActiveWordPool();
+            const countVal = document.getElementById('setting-count').value;
+            if (countVal === 'all') return pool;
+            return pool.slice(0, Math.min(parseInt(countVal), pool.length));
+        }
+
+        function addXP(points) {
+            totalXP += points;
+            localStorage.setItem('mutahir_total_xp', totalXP);
+            document.getElementById('total-xp').innerText = totalXP;
+        }
+
+        function showView(viewId) {
+            clearInterval(questTimerInterval);
+            ['home', 'quest', 'scramble', 'match', 'summary', 'flashcards', 'custom'].forEach(v => {
+                document.getElementById('view-' + v).classList.add('hidden');
+            });
+            document.getElementById('view-' + viewId).classList.remove('hidden');
+            if (viewId === 'flashcards') initFlashcards();
+            if (viewId === 'custom') renderLibrary();
+        }
+
+        function exitGame() {
+            clearInterval(questTimerInterval);
+            showView('home');
+        }
+
+        // ================= GAME 1: CLASSIC VOCAB QUEST =================
+        let questWords = [], questIndex = 0, questScore = 0, questStreak = 0, questCorrectCount = 0;
+        let questAnswered = false, questTimerInterval = null, questTimeLeft = 15;
+
+        function startQuest() {
+            questWords = getRoundWordList();
+            questIndex = 0;
+            questScore = 0;
+            questStreak = 0;
+            questCorrectCount = 0;
+            document.getElementById('quest-q-total').innerText = questWords.length;
+            document.getElementById('quest-score').innerText = '0';
+            document.getElementById('quest-streak').innerText = '0';
+            showView('quest');
+            loadQuestQuestion();
+        }
+
+        function loadQuestQuestion() {
+            clearInterval(questTimerInterval);
+            questAnswered = false;
+            document.getElementById('quest-next-btn').classList.add('hidden');
+            document.getElementById('quest-hint-text').classList.add('hidden');
+            document.getElementById('btn-5050').disabled = false;
+            document.getElementById('btn-5050').classList.remove('opacity-40');
+
+            const current = questWords[questIndex];
+            document.getElementById('quest-q-num').innerText = questIndex + 1;
+            document.getElementById('quest-pos').innerText = current.pos || 'vocabulary';
+            document.getElementById('quest-word').innerText = current.word;
+
+            // Build 4 options
+            const allPool = [...BUILTIN_WORDS, ...customWords].filter(w => w.word !== current.word);
+            const distractors = allPool.sort(() => Math.random() - 0.5).slice(0, 3).map(w => w.def);
+            const options = [current.def, ...distractors].sort(() => Math.random() - 0.5);
+
+            const container = document.getElementById('quest-options');
+            container.innerHTML = '';
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'quest-opt w-full text-left p-4 rounded-xl bg-slate-800/90 hover:bg-indigo-900/50 border border-slate-600 hover:border-indigo-400 text-sm sm:text-base text-slate-100 font-medium transition';
+                btn.innerText = opt;
+                btn.dataset.correct = (opt === current.def) ? 'true' : 'false';
+                btn.onclick = () => selectQuestOption(btn, opt === current.def);
+                container.appendChild(btn);
+            });
+
+            // Timer setup
+            const timerSec = parseInt(document.getElementById('setting-timer').value);
+            const wrap = document.getElementById('quest-timer-wrap');
+            const bar = document.getElementById('quest-timer-bar');
+            if (timerSec > 0) {
+                wrap.classList.remove('hidden');
+                questTimeLeft = timerSec;
+                bar.style.width = '100%';
+                bar.className = 'bg-indigo-500 h-full transition-all duration-1000';
+                questTimerInterval = setInterval(() => {
+                    questTimeLeft--;
+                    const pct = Math.max(0, (questTimeLeft / timerSec) * 100);
+                    bar.style.width = pct + '%';
+                    if (pct < 35) bar.className = 'bg-rose-500 h-full transition-all duration-1000';
+                    if (questTimeLeft <= 0) {
+                        clearInterval(questTimerInterval);
+                        handleQuestTimeout();
+                    }
+                }, 1000);
+            } else {
+                wrap.classList.add('hidden');
+            }
+        }
+
+        function speakCurrentWord() {
+            speakText(questWords[questIndex].word);
+        }
+
+        function useFiftyFifty() {
+            if (questAnswered) return;
+            const wrongBtns = Array.from(document.querySelectorAll('.quest-opt')).filter(b => b.dataset.correct === 'false');
+            wrongBtns.sort(() => Math.random() - 0.5).slice(0, 2).forEach(b => {
+                b.disabled = true;
+                b.classList.add('opacity-25', 'pointer-events-none');
+            });
+            document.getElementById('btn-5050').disabled = true;
+            document.getElementById('btn-5050').classList.add('opacity-40');
+        }
+
+        function useContextHint() {
+            const current = questWords[questIndex];
+            const hintEl = document.getElementById('quest-hint-text');
+            hintEl.innerText = current.example
+                ? 'Example: "' + current.example.replace(new RegExp(current.word, 'gi'), '_____') + '"'
+                : 'Starts with the letter "' + current.word[0].toUpperCase() + '"';
+            hintEl.classList.remove('hidden');
+        }
+
+        function handleQuestTimeout() {
+            if (questAnswered) return;
+            questAnswered = true;
+            questStreak = 0;
+            document.getElementById('quest-streak').innerText = '0';
+            playTone(180, 'sawtooth', 0.25);
+            document.querySelectorAll('.quest-opt').forEach(b => {
+                if (b.dataset.correct === 'true') {
+                    b.classList.add('bg-emerald-900/70', 'border-emerald-400', 'text-emerald-200');
+                }
+            });
+            document.getElementById('quest-next-btn').classList.remove('hidden');
+        }
+
+        function selectQuestOption(btn, isCorrect) {
+            if (questAnswered) return;
+            questAnswered = true;
+            clearInterval(questTimerInterval);
+
+            if (isCorrect) {
+                questStreak++;
+                questCorrectCount++;
+                const earned = 10 + Math.min(questStreak * 2, 20);
+                questScore += earned;
+                addXP(earned);
+                playTone(580, 'sine', 0.15);
+                btn.classList.add('bg-emerald-900/70', 'border-emerald-400', 'text-emerald-200');
+            } else {
+                questStreak = 0;
+                playTone(200, 'sawtooth', 0.25);
+                btn.classList.add('bg-rose-900/70', 'border-rose-400', 'text-rose-200');
+                document.querySelectorAll('.quest-opt').forEach(b => {
+                    if (b.dataset.correct === 'true') {
+                        b.classList.add('bg-emerald-900/70', 'border-emerald-400', 'text-emerald-200');
+                    }
+                });
+            }
+
+            document.getElementById('quest-score').innerText = questScore;
+            document.getElementById('quest-streak').innerText = questStreak;
+            document.getElementById('quest-next-btn').classList.remove('hidden');
+        }
+
+        function nextQuestQuestion() {
+            questIndex++;
+            if (questIndex < questWords.length) {
+                loadQuestQuestion();
+            } else {
+                const acc = Math.round((questCorrectCount / questWords.length) * 100);
+                showSummary(questScore, acc, startQuest);
+            }
+        }
+
+        // ================= GAME 2: WORD SCRAMBLE =================
+        let scramWords = [], scramIndex = 0, scramScore = 0, scramCorrect = 0;
+
+        function scrambleString(word) {
+            const arr = word.toUpperCase().split('');
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            const res = arr.join(' ');
+            return res.replace(/\s/g, '') === word.toUpperCase() && word.length > 2 ? scrambleString(word) : res;
+        }
+
+        function startScramble() {
+            scramWords = getRoundWordList();
+            scramIndex = 0;
+            scramScore = 0;
+            scramCorrect = 0;
+            document.getElementById('scram-total').innerText = scramWords.length;
+            document.getElementById('scram-score').innerText = '0';
+            showView('scramble');
+            loadScrambleWord();
+        }
+
+        function loadScrambleWord() {
+            const current = scramWords[scramIndex];
+            document.getElementById('scram-num').innerText = scramIndex + 1;
+            document.getElementById('scram-def').innerText = current.def;
+            document.getElementById('scram-letters').innerText = scrambleString(current.word);
+            document.getElementById('scram-input').value = '';
+            document.getElementById('scram-feedback').innerText = '';
+            document.getElementById('scram-input').focus();
+        }
+
+        function reshuffleScramble() {
+            document.getElementById('scram-letters').innerText = scrambleString(scramWords[scramIndex].word);
+        }
+
+        function revealScrambleLetter() {
+            const target = scramWords[scramIndex].word;
+            document.getElementById('scram-input').value = target[0].toUpperCase();
+            document.getElementById('scram-input').focus();
+        }
+
+        function checkScramble() {
+            const guess = document.getElementById('scram-input').value.trim().toLowerCase();
+            const target = scramWords[scramIndex].word.toLowerCase();
+            const fb = document.getElementById('scram-feedback');
+
+            if (guess === target) {
+                scramScore += 15;
+                scramCorrect++;
+                addXP(15);
+                playTone(620, 'sine', 0.18);
+                document.getElementById('scram-score').innerText = scramScore;
+                fb.className = 'text-center text-sm font-bold text-emerald-400';
+                fb.innerText = 'Correct! ' + scramWords[scramIndex].word;
+                setTimeout(() => {
+                    scramIndex++;
+                    if (scramIndex < scramWords.length) loadScrambleWord();
+                    else showSummary(scramScore, Math.round((scramCorrect / scramWords.length) * 100), startScramble);
+                }, 900);
+            } else {
+                playTone(200, 'sawtooth', 0.2);
+                fb.className = 'text-center text-sm font-bold text-rose-400';
+                fb.innerText = 'Not quite—try again!';
+            }
+        }
+
+        document.getElementById('scram-input').addEventListener('keydown', e => {
+            if (e.key === 'Enter') checkScramble();
+        });
+
+        // ================= GAME 3: DEFINITION MATCH =================
+        let selectedWordBtn = null, selectedDefBtn = null, matchedPairs = 0, matchAttempts = 0;
+
+        function startMatch() {
+            const pool = getActiveWordPool().slice(0, 5);
+            matchedPairs = 0;
+            matchAttempts = 0;
+            selectedWordBtn = null;
+            selectedDefBtn = null;
+            document.getElementById('match-count').innerText = '0';
+
+            const wordsCol = document.getElementById('match-words-col');
+            const defsCol = document.getElementById('match-defs-col');
+            wordsCol.innerHTML = '';
+            defsCol.innerHTML = '';
+
+            const shuffledWords = [...pool].sort(() => Math.random() - 0.5);
+            const shuffledDefs = [...pool].sort(() => Math.random() - 0.5);
+
+            shuffledWords.forEach(item => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full p-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 font-bold text-left text-white transition';
+                btn.innerText = item.word;
+                btn.dataset.word = item.word;
+                btn.onclick = () => {
+                    if (btn.disabled) return;
+                    document.querySelectorAll('#match-words-col button').forEach(b => b.classList.remove('border-emerald-400', 'bg-emerald-900/40'));
+                    btn.classList.add('border-emerald-400', 'bg-emerald-900/40');
+                    selectedWordBtn = btn;
+                    evaluateMatch();
+                };
+                wordsCol.appendChild(btn);
+            });
+
+            shuffledDefs.forEach(item => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full p-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-sm text-left text-slate-200 transition';
+                btn.innerText = item.def;
+                btn.dataset.word = item.word;
+                btn.onclick = () => {
+                    if (btn.disabled) return;
+                    document.querySelectorAll('#match-defs-col button').forEach(b => b.classList.remove('border-emerald-400', 'bg-emerald-900/40'));
+                    btn.classList.add('border-emerald-400', 'bg-emerald-900/40');
+                    selectedDefBtn = btn;
+                    evaluateMatch();
+                };
+                defsCol.appendChild(btn);
+            });
+
+            showView('match');
+        }
+
+        function evaluateMatch() {
+            if (!selectedWordBtn || !selectedDefBtn) return;
+            matchAttempts++;
+            if (selectedWordBtn.dataset.word === selectedDefBtn.dataset.word) {
+                playTone(600, 'sine', 0.15);
+                [selectedWordBtn, selectedDefBtn].forEach(b => {
+                    b.disabled = true;
+                    b.className = 'w-full p-4 rounded-xl bg-emerald-900/60 border border-emerald-500 text-emerald-200 font-bold text-left opacity-60 cursor-default';
+                });
+                matchedPairs++;
+                addXP(10);
+                document.getElementById('match-count').innerText = matchedPairs;
+                selectedWordBtn = null;
+                selectedDefBtn = null;
+
+                if (matchedPairs === 5) {
+                    const acc = Math.round((5 / matchAttempts) * 100);
+                    setTimeout(() => showSummary(50, acc, startMatch), 500);
+                }
+            } else {
+                playTone(200, 'sawtooth', 0.2);
+                const w = selectedWordBtn, d = selectedDefBtn;
+                w.classList.add('border-rose-500', 'bg-rose-900/40');
+                d.classList.add('border-rose-500', 'bg-rose-900/40');
+                setTimeout(() => {
+                    w.classList.remove('border-rose-500', 'bg-rose-900/40', 'border-emerald-400', 'bg-emerald-900/40');
+                    d.classList.remove('border-rose-500', 'bg-rose-900/40', 'border-emerald-400', 'bg-emerald-900/40');
+                }, 450);
+                selectedWordBtn = null;
+                selectedDefBtn = null;
+            }
+        }
+
+        function showSummary(score, accuracy, replayFn) {
+            document.getElementById('summary-score').innerText = score + ' pts';
+            document.getElementById('summary-accuracy').innerText = accuracy + '%';
+            document.getElementById('summary-replay-btn').onclick = replayFn;
+            showView('summary');
+        }
+
+        // ================= FLASHCARDS =================
+        let fcList = [], fcIdx = 0, fcFlipped = false;
+
+        function initFlashcards() {
+            fcList = [...BUILTIN_WORDS, ...customWords];
+            fcIdx = 0;
+            document.getElementById('fc-total').innerText = fcList.length;
+            renderFlashcard();
+        }
+
+        function renderFlashcard() {
+            fcFlipped = false;
+            document.getElementById('flashcard-inner').classList.remove('rotate-y-180');
+            const item = fcList[fcIdx];
+            document.getElementById('fc-index').innerText = fcIdx + 1;
+            document.getElementById('fc-pos').innerText = item.pos || 'word';
+            document.getElementById('fc-word').innerText = item.word;
+            document.getElementById('fc-def').innerText = item.def;
+            document.getElementById('fc-example').innerText = item.example ? '"' + item.example + '"' : '';
+        }
+
+        function flipFlashcard() {
+            fcFlipped = !fcFlipped;
+            document.getElementById('flashcard-inner').classList.toggle('rotate-y-180', fcFlipped);
+        }
+
+        function speakFlashcard() {
+            speakText(fcList[fcIdx].word);
+        }
+
+        function nextFlashcard() {
+            fcIdx = (fcIdx + 1) % fcList.length;
+            renderFlashcard();
+        }
+
+        function prevFlashcard() {
+            fcIdx = (fcIdx - 1 + fcList.length) % fcList.length;
+            renderFlashcard();
+        }
+
+        // ================= CUSTOM WORD BANK =================
+        function updateWordBadge() {
+            document.getElementById('word-count-badge').innerText = BUILTIN_WORDS.length + customWords.length;
+            document.getElementById('total-xp').innerText = totalXP;
+        }
+
+        function addCustomWord() {
+            const word = document.getElementById('new-word').value.trim();
+            const pos = document.getElementById('new-pos').value.trim() || 'vocabulary';
+            const def = document.getElementById('new-def').value.trim();
+            const example = document.getElementById('new-example').value.trim();
+
+            if (!word || !def) {
+                alert('Please enter both a word and its definition.');
+                return;
+            }
+            customWords.unshift({ word, pos, def, example, isCustom: true });
+            localStorage.setItem('mutahir_custom_words', JSON.stringify(customWords));
+            document.getElementById('new-word').value = '';
+            document.getElementById('new-pos').value = '';
+            document.getElementById('new-def').value = '';
+            document.getElementById('new-example').value = '';
+            updateWordBadge();
+            renderLibrary();
+        }
+
+        function clearCustomWords() {
+            if (confirm('Remove all your custom added words?')) {
+                customWords = [];
+                localStorage.removeItem('mutahir_custom_words');
+                updateWordBadge();
+                renderLibrary();
+            }
+        }
+
+        function renderLibrary() {
+            const all = [...customWords, ...BUILTIN_WORDS];
+            document.getElementById('lib-total').innerText = all.length;
+            const list = document.getElementById('word-library-list');
+            list.innerHTML = all.map(item => `
+                <div class="py-3 flex items-start justify-between gap-4">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-white">${item.word}</span>
+                            <span class="text-xs text-indigo-400 italic">${item.pos || ''}</span>
+                            ${item.isCustom ? '<span class="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold">Custom</span>' : ''}
+                        </div>
+                        <p class="text-sm text-slate-300">${item.def}</p>
+                    </div>
+                    <button onclick="speakText('${item.word.replace(/'/g, "\'")}')" class="text-slate-400 hover:text-indigo-400 p-1">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Init
+        updateWordBadge();
+    </script>
+</body>
+</html>
